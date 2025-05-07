@@ -20,7 +20,8 @@ const EventsCategorySection = () => {
             Browse by Category
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Explore events by category to find exactly what you're looking for
+            Explore events by category to find exactly what you&apos;re looking
+            for
           </p>
         </div>
 
