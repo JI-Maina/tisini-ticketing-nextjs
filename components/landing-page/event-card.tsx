@@ -32,23 +32,23 @@ const EventCard: React.FC<EventCardProps> = ({
         </div>
       </div>
       <CardContent className="p-5">
-        <h3 className="font-bold text-lg mb-2 text-dark-purple">{title}</h3>
+        <h3 className="font-bold text-lg mb-2 text-dark-blue">{title}</h3>
         <div className="space-y-2 text-gray-600">
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-main-purple" />
+            <Calendar className="w-4 h-4 text-main-blue" />
             <span className="text-sm">{date}</span>
           </div>
           <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-main-purple" />
+            <MapPin className="w-4 h-4 text-main-blue" />
             <span className="text-sm">{location}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-main-purple" />
+            <Clock className="w-4 h-4 text-main-blue" />
             <span className="text-sm">{time}</span>
           </div>
         </div>
         <div className="mt-4">
-          <button className="w-full py-2 rounded-full bg-primary/10 text-main-purple font-medium hover:bg-primary/20 transition-colors">
+          <button className="w-full py-2 rounded-full bg-primary/10 text-main-blue font-medium hover:bg-primary/20 transition-colors">
             Get Tickets
           </button>
         </div>

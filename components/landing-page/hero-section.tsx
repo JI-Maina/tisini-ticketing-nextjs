@@ -19,7 +19,7 @@ const HeroSection = () => {
           {/* Search Bar */}
           <div className="bg-white rounded-full shadow-lg p-2 flex items-center max-w-2xl mx-auto">
             <div className="flex-1 flex items-center gap-2 px-4">
-              <Search className="w-5 h-5 text-gray-400" />
+              <Search className="w-4 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search events, artists, venues..."
@@ -27,14 +27,16 @@ const HeroSection = () => {
               />
             </div>
             <div className="flex items-center gap-2 border-l border-gray-200 px-4">
-              <MapPin className="w-5 h-5 text-gray-400" />
+              <MapPin className="w-4 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Location"
                 className="flex-1 border-0 focus:outline-none focus:ring-0 text-gray-800 placeholder:text-gray-400 bg-transparent"
               />
             </div>
-            <Button className="btn-gradient rounded-full px-6">Search</Button>
+            <div className="">
+              <Button className="btn-gradient rounded-full px-3">Search</Button>
+            </div>
           </div>
         </div>
       </div>

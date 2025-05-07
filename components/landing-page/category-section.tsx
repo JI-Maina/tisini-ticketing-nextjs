@@ -52,7 +52,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ title, icon, count }) => {
         <div className="w-14 h-14 rounded-full flex items-center justify-center bg-primary/10 mb-4 group-hover:bg-primary/20 transition-colors">
           {icon}
         </div>
-        <h3 className="font-semibold text-dark-purple mb-1">{title}</h3>
+        <h3 className="font-semibold text-dark-blue mb-1">{title}</h3>
         <p className="text-sm text-gray-500">{count} Events</p>
       </CardContent>
     </Card>

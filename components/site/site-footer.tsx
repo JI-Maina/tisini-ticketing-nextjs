@@ -93,8 +93,8 @@ const Footer = () => {
             <h4 className="font-semibold mb-4">Contact</h4>
             <ul className="space-y-2">
               <li className="text-gray-300">support@tisinivault.com</li>
-              <li className="text-gray-300">+1 (555) 123-4567</li>
-              <li className="text-gray-300">123 Event Street, CA 94103</li>
+              <li className="text-gray-300">+254 (712) 345-678</li>
+              <li className="text-gray-300">Nairobi, Kenya</li>
             </ul>
           </div>
         </div>

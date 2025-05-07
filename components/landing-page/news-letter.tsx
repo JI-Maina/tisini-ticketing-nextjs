@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 
 const NewsletterSignup = () => {
   return (
-    <div className="w-full bg-main-purple/10 py-12 px-4 sm:px-6 md:py-16">
+    <div className="w-full bg-main-blue/10 py-12 px-4 sm:px-6 md:py-16">
       <div className="container mx-auto max-w-4xl">
         <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-dark-purple mb-3">
+          <h2 className="text-2xl md:text-3xl font-bold text-dark-blue mb-3">
             Never Miss an Event
           </h2>
           <p className="text-gray-600 max-w-xl mx-auto">
