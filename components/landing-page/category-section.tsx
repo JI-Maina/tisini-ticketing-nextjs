@@ -3,7 +3,7 @@ import {
   Calendar,
   Film,
   Headphones,
-  Image,
+  // Image,
   Music,
   Ticket,
   Users,
@@ -76,7 +76,7 @@ const categories = [
   {
     id: 3,
     title: "Arts & Theatre",
-    icon: <Image className="w-6 h-6 text-main-purple" />,
+    icon: <Users className="w-6 h-6 text-main-purple" />,
     count: 97,
   },
   {
