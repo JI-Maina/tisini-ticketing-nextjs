@@ -8,4 +8,7 @@ type EventTicket = {
   image: string | null;
   max_attendees: string | null;
   terms_and_conditions: string | null;
+  ticket_types: TicketType[];
 };
+
+type TicketType = { id: number; type: string; price: string };
