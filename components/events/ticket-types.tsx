@@ -33,7 +33,7 @@ const TicketTypeTable = ({ event }: { event: EventTicket }) => {
       updateTicket(ticket[0]);
       updateEvent(event);
     }
-  }, [selectedTicket, event]);
+  }, [selectedTicket, updateEvent, updateTicket, event]);
 
   return (
     <div className="border-t border-gray-200 pt-6">

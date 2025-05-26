@@ -48,10 +48,15 @@ const CheckoutPage = () => {
   const { toast } = useToast();
   const router = useRouter();
 
-  const formattedDate = format(
-    new Date(eventData.date),
-    "EEEE, MMMM d, yyyy 'at' h:mm a"
-  );
+  let formattedDate = "Invalid date";
+
+  if (eventData?.date) {
+    const date = new Date(eventData.date);
+    if (!isNaN(date.getTime())) {
+      formattedDate = format(date, "EEEE, MMMM d, yyyy 'at' h:mm a");
+    }
+  }
+
   const totalPrice = parseFloat(selectedTicket.price) * formData.quantity;
 
   const handleInputChange = (
@@ -131,10 +136,6 @@ const CheckoutPage = () => {
           });
           console.error("Error purchasing ticket:", error);
         });
-
-      //   console.log("Checkout data:", data);
-      // Here you would typically send the data to your backend
-      //   alert("Ticket purchased successfully!");
     }
   };
 
