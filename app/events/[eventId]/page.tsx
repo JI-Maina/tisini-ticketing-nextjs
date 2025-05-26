@@ -8,7 +8,7 @@ import LoadingPage from "@/components/loader/loading-page";
 import TicketTypeTable from "@/components/events/ticket-types";
 
 type EventProps = {
-  params: { eventId: string };
+  params: Promise<{ eventId: string }>;
 };
 
 const EventDetailsPage = async ({ params }: EventProps) => {
@@ -20,8 +20,6 @@ const EventDetailsPage = async ({ params }: EventProps) => {
     new Date(event.date),
     "EEEE, MMMM d, yyyy 'at' h:mm a"
   );
-
-  console.log(event);
 
   return (
     <Suspense fallback={<LoadingPage />}>
