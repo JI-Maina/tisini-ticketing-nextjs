@@ -8,12 +8,16 @@ import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
   Calendar,
+  CheckCircle,
   CreditCard,
+  Home,
+  Loader2,
   Mail,
   MapPin,
   Minus,
   Phone,
   Plus,
+  Ticket,
   User,
 } from "lucide-react";
 
@@ -22,10 +26,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface CheckoutData {
   quantity: number;
-  user_name: string;
+  first_name: string;
+  last_name: string;
   user_email: string;
   user_phone: string;
 }
@@ -34,24 +47,31 @@ const image =
   "https://images.unsplash.com/photo-1472396961693-142e6e269027?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80";
 
 const CheckoutPage = () => {
-  const eventData = useStore((state) => state.store.eventTicket);
-  const selectedTicket = useStore((state) => state.store.ticket);
+  const { store, updateTicket } = useStore();
+  const { eventTicket: eventData, ticket: selectedTicket } = store;
 
   const [formData, setFormData] = useState<CheckoutData>({
     quantity: 1,
-    user_name: "",
+    first_name: "",
+    last_name: "",
     user_email: "",
     user_phone: "",
   });
 
   const [errors, setErrors] = useState<Partial<CheckoutData>>({});
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [purchaseResult, setPurchaseResult] = useState<{
+    ticket_code?: string;
+    message?: string;
+  } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
   let formattedDate = "Invalid date";
 
-  if (eventData?.date) {
-    const date = new Date(eventData.date);
+  if (eventData?.date_from) {
+    const date = new Date(eventData.date_from);
     if (!isNaN(date.getTime())) {
       formattedDate = format(date, "EEEE, MMMM d, yyyy 'at' h:mm a");
     }
@@ -59,15 +79,38 @@ const CheckoutPage = () => {
 
   const totalPrice = parseFloat(selectedTicket.price) * formData.quantity;
 
+  const formatPhoneInternational = (raw: string): string => {
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length === 0) return "";
+    return digits.slice(0, 15);
+  };
+
   const handleInputChange = (
     field: keyof CheckoutData,
-    value: string | number
+    value: string | number,
   ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
+    const isPhone = field === "user_phone";
+    const nextValue = isPhone ? formatPhoneInternational(String(value)) : value;
+    setFormData((prev) => ({ ...prev, [field]: nextValue }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
+  };
+
+  const handleSuccessModalClose = () => {
+    setSuccessModalOpen(false);
+    setPurchaseResult(null);
+  };
+
+  const handleGoHome = () => {
+    updateTicket({} as EventPackage);
+    handleSuccessModalClose();
+    router.push("/");
+  };
+
+  const handlePurchaseMore = () => {
+    handleSuccessModalClose();
+    router.push(`/events/${eventData?.id ?? ""}`);
   };
 
   const handleQuantityChange = (increment: boolean) => {
@@ -80,16 +123,23 @@ const CheckoutPage = () => {
   const validateForm = () => {
     const newErrors: Partial<CheckoutData> = {};
 
-    if (!formData.user_name.trim()) {
-      newErrors.user_name = "Name is required";
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = "First Name is required";
+    }
+    if (!formData.last_name.trim()) {
+      newErrors.last_name = "Last Name is required";
     }
     if (!formData.user_email.trim()) {
       newErrors.user_email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.user_email)) {
       newErrors.user_email = "Please enter a valid email";
     }
-    if (!formData.user_phone.trim()) {
+    const phone = formData.user_phone.replace(/\D/g, "");
+    if (!phone) {
       newErrors.user_phone = "Phone number is required";
+    } else if (phone.length < 10 || phone.length > 15) {
+      newErrors.user_phone =
+        "Enter a valid number with country code (10–15 digits, e.g. 254712345678 or 441234567890)";
     }
 
     setErrors(newErrors);
@@ -100,15 +150,22 @@ const CheckoutPage = () => {
     e.preventDefault();
 
     if (validateForm()) {
+      setIsSubmitting(true);
       const data = {
-        ticket_type: selectedTicket.id,
-        user_name: formData.user_name,
-        user_email: formData.user_email,
-        user_phone: formData.user_phone,
+        action: "create_ticket_purchaser",
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        ticket_activity_id: eventData.id,
+        ticket_package_id: selectedTicket.id,
+        phone: formData.user_phone,
+        email: formData.user_email,
+        amount: "1",
+        quantity: formData.quantity,
       };
 
-      const url = process.env.NEXT_PUBLIC_API;
-      fetch(`${url}/api/tickets/`, {
+      const url = process.env.NEXT_PUBLIC_PHP_API;
+      const TOKEN = process.env.NEXT_PUBLIC_TOKEN;
+      fetch(`${url}gettoken=${TOKEN}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -122,12 +179,18 @@ const CheckoutPage = () => {
           return response.json();
         })
         .then((result) => {
+          // console.log("Server response:", result);
           toast({
-            title: "Success",
-            description: "Ticket purchased successfully",
+            title: result?.message ?? "Success",
+            description: result?.ticket_code
+              ? `Your ticket code: ${result.ticket_code}`
+              : "Ticket purchased successfully",
           });
-          router.push("/");
-          console.log("Ticket purchased successfully", result);
+          setPurchaseResult({
+            ticket_code: result?.ticket_code,
+            message: result?.message,
+          });
+          setSuccessModalOpen(true);
         })
         .catch((error) => {
           toast({
@@ -135,7 +198,8 @@ const CheckoutPage = () => {
             description: "Error purchasing ticket",
           });
           console.error("Error purchasing ticket:", error);
-        });
+        })
+        .finally(() => setIsSubmitting(false));
     }
   };
 
@@ -167,13 +231,13 @@ const CheckoutPage = () => {
               <CardContent className="space-y-4">
                 <div className="flex gap-4">
                   <img
-                    src={eventData.image || image}
-                    alt={eventData.name}
+                    src={image}
+                    alt={eventData.ticket_title}
                     className="w-20 h-20 object-cover rounded-lg"
                   />
                   <div className="flex-1">
                     <h3 className="font-semibold text-dark-blue">
-                      {eventData.name}
+                      {eventData.ticket_title}
                     </h3>
                     <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
                       <Calendar className="w-3 h-3" />
@@ -189,7 +253,7 @@ const CheckoutPage = () => {
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center">
                     <span className="font-medium">
-                      {selectedTicket.type} Ticket
+                      {selectedTicket.category_name} Ticket
                     </span>
                     <span className="font-semibold">
                       ${parseFloat(selectedTicket.price).toLocaleString()}
@@ -248,20 +312,39 @@ const CheckoutPage = () => {
                   {/* User Details */}
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="user_name">Full Name *</Label>
+                      <Label htmlFor="first_name">First Name *</Label>
                       <Input
-                        id="user_name"
+                        id="first_name"
                         type="text"
                         placeholder="Enter your full name"
-                        value={formData.user_name}
+                        value={formData.first_name}
                         onChange={(e) =>
-                          handleInputChange("user_name", e.target.value)
+                          handleInputChange("first_name", e.target.value)
                         }
-                        className={errors.user_name ? "border-red-500" : ""}
+                        className={errors.first_name ? "border-red-500" : ""}
                       />
-                      {errors.user_name && (
+                      {errors.first_name && (
                         <p className="text-sm text-red-600">
-                          {errors.user_name}
+                          {errors.first_name}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="last_name">Last Name *</Label>
+                      <Input
+                        id="last_name"
+                        type="text"
+                        placeholder="Enter your full name"
+                        value={formData.last_name}
+                        onChange={(e) =>
+                          handleInputChange("last_name", e.target.value)
+                        }
+                        className={errors.last_name ? "border-red-500" : ""}
+                      />
+                      {errors.last_name && (
+                        <p className="text-sm text-red-600">
+                          {errors.last_name}
                         </p>
                       )}
                     </div>
@@ -297,7 +380,8 @@ const CheckoutPage = () => {
                         <Input
                           id="user_phone"
                           type="tel"
-                          placeholder="Enter your phone number"
+                          inputMode="numeric"
+                          placeholder="e.g. 254712345678, 441234567890"
                           value={formData.user_phone}
                           onChange={(e) =>
                             handleInputChange("user_phone", e.target.value)
@@ -307,6 +391,10 @@ const CheckoutPage = () => {
                           }`}
                         />
                       </div>
+                      <p className="text-xs text-gray-500">
+                        Enter with country code, digits only (e.g. 254 for
+                        Kenya, 44 for UK, 1 for US)
+                      </p>
                       {errors.user_phone && (
                         <p className="text-sm text-red-600">
                           {errors.user_phone}
@@ -318,8 +406,16 @@ const CheckoutPage = () => {
                   <Button
                     type="submit"
                     className="w-full btn-gradient rounded-full py-6 text-base"
+                    disabled={isSubmitting}
                   >
-                    Complete Purchase
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      "Complete Purchase"
+                    )}
                   </Button>
                 </form>
               </CardContent>
@@ -327,6 +423,70 @@ const CheckoutPage = () => {
           </div>
         </div>
       </div>
+
+      <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
+        <DialogContent
+          className="sm:max-w-md"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={() => handleSuccessModalClose()}
+        >
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-main-blue">
+              <CheckCircle className="h-6 w-6" />
+              Order received
+            </DialogTitle>
+            <DialogDescription>
+              {purchaseResult?.message ?? "Your order has been received."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="rounded-lg border bg-gray-50 p-4 space-y-2">
+              <p className="font-semibold text-dark-blue">
+                {eventData?.ticket_title}
+              </p>
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>
+                  {selectedTicket?.category_name} × {formData.quantity}
+                </span>
+                <span>${totalPrice.toLocaleString()}</span>
+              </div>
+              {purchaseResult?.ticket_code && (
+                <div className="flex items-center gap-2 pt-2 border-t">
+                  <Ticket className="h-4 w-4 text-main-blue" />
+                  <span className="font-mono font-semibold">
+                    {purchaseResult.ticket_code}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <p className="text-sm text-center font-medium text-dark-blue bg-main-blue/10 rounded-lg p-3">
+              Complete payment on your phone when you get the M-Pesa prompt.
+            </p>
+          </div>
+
+          <DialogFooter className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={handleGoHome}
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Home
+            </Button>
+            <Button
+              type="button"
+              className="w-full sm:w-auto btn-gradient"
+              onClick={handlePurchaseMore}
+            >
+              <Ticket className="w-4 h-4 mr-2" />
+              Purchase more
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
