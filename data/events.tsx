@@ -1,44 +1,55 @@
 "use server";
 
-export const getEvents = async (): Promise<TicketEvent[]> => {
+function getApiUrl(): string | null {
   const BASE_URL = process.env.NEXT_PUBLIC_PHP_API;
   const TOKEN = process.env.NEXT_PUBLIC_TOKEN;
+  if (!BASE_URL || !TOKEN) return null;
+  return `${BASE_URL}gettoken=${TOKEN}`;
+}
 
-  const res = await fetch(`${BASE_URL}gettoken=${TOKEN}`, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "fetch_ticket_activity",
-    }),
-  });
+export const getEvents = async (): Promise<TicketEvent[]> => {
+  const url = getApiUrl();
+  if (!url) return [];
 
-  const data = await res.json();
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "fetch_ticket_activity",
+      }),
+      cache: "no-store",
+    });
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch events!");
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
   }
-
-  return data;
 };
 
 export const getEventPackage = async (
   eventId: string,
 ): Promise<EventPackage[]> => {
-  const BASE_URL = process.env.NEXT_PUBLIC_PHP_API;
-  const TOKEN = process.env.NEXT_PUBLIC_TOKEN;
+  const url = getApiUrl();
+  if (!url) return [];
 
-  const res = await fetch(`${BASE_URL}gettoken=${TOKEN}`, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "fetch_ticket_packages",
-      activity_id: eventId,
-    }),
-  });
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "fetch_ticket_packages",
+        activity_id: eventId,
+      }),
+      cache: "no-store",
+    });
 
-  const data = await res.json();
+    if (!res.ok) return [];
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch events!");
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
   }
-
-  return data;
 };
