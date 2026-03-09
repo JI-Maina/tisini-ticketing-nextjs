@@ -28,7 +28,14 @@ export const EventDetail: FC<EventProps> = ({ eventPackages }) => {
       <div className="md:col-span-1 w-full">
         <div className="relative aspect-[3/4] rounded-lg overflow-hidden shadow-lg">
           <Image
-            src="/photo-event.avif"
+            src={
+              eventTicket.id === "3"
+                ? "/daystar-v-kcb-event.jpeg"
+                : eventTicket.photo_url.length === 0 ||
+                    eventTicket.photo_url === null
+                  ? eventTicket.photo_url
+                  : "/event-img.avif"
+            }
             alt={eventTicket.ticket_title}
             fill
             className="object-cover"
@@ -126,7 +133,9 @@ export const EventDetail: FC<EventProps> = ({ eventPackages }) => {
                         <span className="text-xl font-bold text-main-blue">
                           ${parseFloat(ticket.price).toLocaleString()}
                         </span>
-                        <span className="text-xs text-gray-500">per ticket</span>
+                        <span className="text-xs text-gray-500">
+                          per ticket
+                        </span>
                         {isSelected && (
                           <div className="flex items-center gap-1 text-main-blue font-medium text-sm mt-1">
                             <Check className="w-4 h-4" />

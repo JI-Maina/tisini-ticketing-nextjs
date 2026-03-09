@@ -13,7 +13,12 @@ export const EventCard = ({ event }: { event: TicketEvent }) => {
 
   const { updateEvent } = useStore();
 
-  const img = photo_url.length === 0 ? photo_url : "/event-img.avif";
+  const img =
+    id === "3"
+      ? "/daystar-v-kcb-event.jpeg"
+      : photo_url.length === 0
+        ? photo_url
+        : "/event-img.avif";
 
   const parsed = parseISO(date_from);
 
@@ -32,7 +37,7 @@ export const EventCard = ({ event }: { event: TicketEvent }) => {
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
           <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-sm font-semibold">
-            {"From $99"}
+            {`Capacity: ${event.event_capacity}`}
           </div>
         </div>
         <CardContent className="p-2 transition-colors group-hover:bg-gray-50">
