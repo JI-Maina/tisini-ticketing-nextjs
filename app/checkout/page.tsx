@@ -15,7 +15,6 @@ import {
   Mail,
   MapPin,
   Minus,
-  Phone,
   Plus,
   Ticket,
   User,
@@ -34,6 +33,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 
 interface CheckoutData {
   quantity: number;
@@ -65,8 +66,11 @@ const CheckoutPage = () => {
     message?: string;
   } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [phoneValue, setPhoneValue] = useState<string | undefined>(undefined);
   const { toast } = useToast();
   const router = useRouter();
+
+  const fullPhone = phoneValue?.replace(/\D/g, "") ?? "";
 
   let formattedDate = "Invalid date";
 
@@ -79,21 +83,20 @@ const CheckoutPage = () => {
 
   const totalPrice = parseFloat(selectedTicket.price) * formData.quantity;
 
-  const formatPhoneInternational = (raw: string): string => {
-    const digits = raw.replace(/\D/g, "");
-    if (digits.length === 0) return "";
-    return digits.slice(0, 15);
-  };
-
   const handleInputChange = (
     field: keyof CheckoutData,
     value: string | number,
   ) => {
-    const isPhone = field === "user_phone";
-    const nextValue = isPhone ? formatPhoneInternational(String(value)) : value;
-    setFormData((prev) => ({ ...prev, [field]: nextValue }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const handlePhoneChange = (value: string | undefined) => {
+    setPhoneValue(value);
+    if (errors.user_phone) {
+      setErrors((prev) => ({ ...prev, user_phone: undefined }));
     }
   };
 
@@ -134,12 +137,10 @@ const CheckoutPage = () => {
     } else if (!/\S+@\S+\.\S+/.test(formData.user_email)) {
       newErrors.user_email = "Please enter a valid email";
     }
-    const phone = formData.user_phone.replace(/\D/g, "");
-    if (!phone) {
+    if (!phoneValue?.trim()) {
       newErrors.user_phone = "Phone number is required";
-    } else if (phone.length < 10 || phone.length > 15) {
-      newErrors.user_phone =
-        "Enter a valid number with country code (10–15 digits, e.g. 254712345678 or 441234567890)";
+    } else if (!isValidPhoneNumber(phoneValue)) {
+      newErrors.user_phone = "Please enter a valid phone number";
     }
 
     setErrors(newErrors);
@@ -157,7 +158,7 @@ const CheckoutPage = () => {
         last_name: formData.last_name,
         ticket_activity_id: eventData.id,
         ticket_package_id: selectedTicket.id,
-        phone: formData.user_phone,
+        phone: fullPhone,
         email: formData.user_email,
         amount: "1",
         quantity: formData.quantity,
@@ -206,13 +207,15 @@ const CheckoutPage = () => {
   return (
     <div className="container mx-auto px-4 py-8 flex-grow">
       <div className="mb-6">
-        <Link
-          href={`/events/`}
+        <Button
+          onClick={() => router.back()}
+          variant="link"
+          type="button"
           className="text-main-blue hover:underline flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to event details</span>
-        </Link>
+        </Button>
       </div>
 
       <div className="max-w-4xl mx-auto">
@@ -375,26 +378,19 @@ const CheckoutPage = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="user_phone">Phone Number *</Label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                        <Input
-                          id="user_phone"
-                          type="tel"
-                          inputMode="numeric"
-                          placeholder="e.g. 254712345678, 441234567890"
-                          value={formData.user_phone}
-                          onChange={(e) =>
-                            handleInputChange("user_phone", e.target.value)
-                          }
-                          className={`pl-10 ${
-                            errors.user_phone ? "border-red-500" : ""
-                          }`}
-                        />
-                      </div>
-                      <p className="text-xs text-gray-500">
-                        Enter with country code, digits only (e.g. 254 for
-                        Kenya, 44 for UK, 1 for US)
-                      </p>
+                      <PhoneInput
+                        id="user_phone"
+                        international
+                        defaultCountry="KE"
+                        placeholder="Enter phone number"
+                        value={phoneValue}
+                        onChange={handlePhoneChange}
+                        className={`PhoneInput--checkout ${errors.user_phone ? "PhoneInput--error" : ""}`}
+                        numberInputProps={{
+                          "aria-label": "Phone number",
+                          className: errors.user_phone ? "!border-red-500" : "",
+                        }}
+                      />
                       {errors.user_phone && (
                         <p className="text-sm text-red-600">
                           {errors.user_phone}
@@ -461,9 +457,22 @@ const CheckoutPage = () => {
               )}
             </div>
 
-            <p className="text-sm text-center font-medium text-dark-blue bg-main-blue/10 rounded-lg p-3">
-              Complete payment on your phone when you get the M-Pesa prompt.
-            </p>
+            <div className="space-y-3 text-sm text-dark-blue bg-main-blue/10 rounded-lg p-4">
+              <p className="font-medium text-center">
+                Complete payment on your phone when you get the M-Pesa prompt.
+              </p>
+              <p className="font-medium pt-2 border-t border-main-blue/20">
+                If you did not receive a prompt, you may pay manually:
+              </p>
+              <ol className="list-decimal list-inside space-y-1.5 text-left">
+                <li>Go to your M-Pesa Menu</li>
+                <li>Select Lipa na M-Pesa</li>
+                <li>Select Pay Bill</li>
+                <li>Enter Business Number: 570936</li>
+                <li>Enter Account Number: UT9PN9WT</li>
+                <li>Enter Amount: KES {totalPrice.toLocaleString()}</li>
+              </ol>
+            </div>
           </div>
 
           <DialogFooter className="flex flex-col gap-2 sm:flex-row">

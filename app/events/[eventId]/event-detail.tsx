@@ -1,17 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 import { useStore } from "@/store/store";
 import { format } from "date-fns";
-import { Badge, Calendar, Check, MapPin, Ticket } from "lucide-react";
+import { Badge, Calendar, Check, MapPin, Ticket, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { FC } from "react";
@@ -64,7 +57,7 @@ export const EventDetail: FC<EventProps> = ({ eventPackages }) => {
             <MapPin className="w-5 h-5 text-main-blue mt-0.5" />
             <div>
               <h3 className="font-semibold text-dark-blue">Venue</h3>
-              <p className="text-gray-600">{"eventTicket"}</p>
+              <p className="text-gray-600">{eventTicket.venue}</p>
             </div>
           </div>
         </div>
@@ -79,81 +72,87 @@ export const EventDetail: FC<EventProps> = ({ eventPackages }) => {
           </p>
         </div>
 
-        {/* <TicketTypeTable event={event} /> */}
+        {/* Ticket type selection - card layout */}
         <div className="border-t border-gray-200 pt-6">
-          <h3 className="font-semibold text-dark-blue text-lg mb-4">
+          <h3 className="font-semibold text-dark-blue text-lg mb-1">
             Select Ticket Type
           </h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Choose a ticket and proceed to checkout
+          </p>
 
-          <div className="rounded-lg overflow-hidden border border-gray-200 mb-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]"></TableHead>
-                  <TableHead>Ticket Type</TableHead>
-                  <TableHead>Price</TableHead>
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {eventPackages.map((ticket) => (
-                  <TableRow
-                    key={ticket.id}
-                    className={`cursor-pointer hover:bg-gray-50 transition-colors ${
-                      selectedTicket?.id === ticket.id
-                        ? "bg-main-blue/10 ring-1 ring-main-blue"
-                        : ""
-                    }`}
-                    onClick={() => updateTicket(ticket)}
-                  >
-                    <TableCell className="text-center">
-                      {selectedTicket?.id === ticket.id ? (
-                        <Check className="w-5 h-5 text-main-blue mx-auto" />
-                      ) : null}
-                    </TableCell>
-                    <TableCell>
-                      <label
-                        htmlFor={`ticket-${ticket.id}`}
-                        className="font-medium cursor-pointer"
-                      >
-                        {ticket.category_name}
-                        {ticket.category_name === "EARLY BIRD" && (
-                          <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-100">
-                            Limited
-                          </Badge>
+          <div className="grid gap-3 sm:grid-cols-2 mb-6">
+            {eventPackages.map((ticket) => {
+              const isSelected = selectedTicket?.id === ticket.id;
+              return (
+                <Card
+                  key={ticket.id}
+                  className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                    isSelected
+                      ? "ring-2 ring-main-blue bg-main-blue/5 shadow-md"
+                      : "border-gray-200 hover:border-main-blue/40 hover:bg-gray-50/50"
+                  }`}
+                  onClick={() => updateTicket(ticket)}
+                >
+                  <CardContent className="p-4 sm:p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-dark-blue text-lg">
+                            {ticket.category_name}
+                          </span>
+                          {ticket.category_name === "EARLY BIRD" && (
+                            <Badge className="bg-green-100 text-green-800 border-0 font-medium">
+                              Limited
+                            </Badge>
+                          )}
+                          {ticket.category_name === "VVIP" && (
+                            <Badge className="bg-purple-100 text-purple-800 border-0 font-medium">
+                              Premium
+                            </Badge>
+                          )}
+                        </div>
+                        {ticket.description?.trim() && (
+                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                            {ticket.description}
+                          </p>
                         )}
-                        {ticket.category_name === "VVIP" && (
-                          <Badge className="ml-2 bg-purple-100 text-purple-800 hover:bg-purple-100">
-                            Premium
-                          </Badge>
+                        <div className="flex items-center gap-1.5 mt-2 text-sm text-gray-500">
+                          <Users className="w-4 h-4 shrink-0" />
+                          <span>{ticket.quantity} available</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2 shrink-0">
+                        <span className="text-xl font-bold text-main-blue">
+                          ${parseFloat(ticket.price).toLocaleString()}
+                        </span>
+                        <span className="text-xs text-gray-500">per ticket</span>
+                        {isSelected && (
+                          <div className="flex items-center gap-1 text-main-blue font-medium text-sm mt-1">
+                            <Check className="w-4 h-4" />
+                            Selected
+                          </div>
                         )}
-                      </label>
-                    </TableCell>
-                    <TableCell className="font-semibold">
-                      ${parseFloat(ticket.price).toLocaleString()}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
 
           <div className="border-t border-gray-200 pt-6">
             <Link href={`/checkout`}>
               <Button
-                className="btn-gradient rounded-full px-8 py-6 text-base flex items-center gap-2"
+                className="w-full sm:w-auto btn-gradient rounded-full px-8 py-6 text-base flex items-center gap-2"
                 disabled={!selectedTicket?.id}
               >
                 <Ticket className="w-5 h-5" />
-                {selectedTicket ? "Buy Selected Ticket" : "Select a Ticket"}
+                {selectedTicket
+                  ? `Buy ${selectedTicket.category_name} — $${parseFloat(selectedTicket.price).toLocaleString()}`
+                  : "Select a Ticket"}
               </Button>
             </Link>
-
-            {/* {event.max_attendees && (
-          <p className="text-sm text-gray-500 mt-2">
-            Limited availability. Maximum {event.max_attendees} attendees.
-          </p>
-        )} */}
           </div>
         </div>
       </div>
