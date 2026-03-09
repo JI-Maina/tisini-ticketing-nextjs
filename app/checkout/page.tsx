@@ -468,8 +468,11 @@ const CheckoutPage = () => {
                 <li>Go to your M-Pesa Menu</li>
                 <li>Select Lipa na M-Pesa</li>
                 <li>Select Pay Bill</li>
-                <li>Enter Business Number: 570936</li>
-                <li>Enter Account Number: UT9PN9WT</li>
+                <li>Enter Business Number: 4113757</li>
+                <li>
+                  Enter Account Number:{" "}
+                  {purchaseResult?.ticket_code ?? "Your ticket code"}
+                </li>
                 <li>Enter Amount: KES {totalPrice.toLocaleString()}</li>
               </ol>
             </div>
