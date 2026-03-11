@@ -53,3 +53,27 @@ export const getEventPackage = async (
     return [];
   }
 };
+
+export const confirmPayment = async (ticketId: string): Promise<Ticket[]> => {
+  const url = getApiUrl();
+  if (!url) return [];
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "fetch_single_ticket_purchaser_details",
+        ticket_code: ticketId,
+      }),
+      cache: "no-store",
+    });
+
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    console.log(data);
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+};

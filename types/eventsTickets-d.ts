@@ -37,3 +37,24 @@ type EventPackage = {
   ticket_package_category_id: string;
   category_name: string;
 };
+
+type Ticket = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  date_created: string;
+  date_updated: string;
+  ticket_activity_id: string;
+  ticket_package_id: string;
+  is_registered: string;
+  is_verified: string;
+  is_paid: string;
+  verification_method_id: string | null;
+  phone: string;
+  email: string;
+  amount: string;
+  ticket_code: string;
+  quantity: string;
+  amount_paid: string;
+  payment_status: string;
+};
