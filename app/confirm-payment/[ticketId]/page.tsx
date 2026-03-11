@@ -47,10 +47,22 @@ const ConfirmPaymentPage: FC<Props> = async ({ params }) => {
       {ticketData.is_paid === "0" ? (
         <TicketPayment ticket={ticketData} />
       ) : (
-        <div className="space-y-8 py-8">
-          {ticket.map((t) => (
-            <TicketReceipt key={t.id} ticket={t} />
-          ))}
+        <div className="container mx-auto px-4 py-8">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-main-blue hover:underline mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to home
+          </Link>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {ticket.map((t) => (
+              <TicketReceipt
+                key={t.id ?? t.TicketNo ?? t.ticket_code}
+                ticket={t}
+              />
+            ))}
+          </div>
         </div>
       )}
     </main>
@@ -141,7 +153,7 @@ const TicketPayment = ({ ticket }: { ticket: Ticket }) => {
             <div className="flex items-center justify-between py-2 pt-4 border-t">
               <span className="text-gray-600">Amount to pay</span>
               <span className="text-lg font-bold text-main-blue">
-                KES {amountToPay.toLocaleString()}
+                KES {amountToPay * parseInt(ticket.quantity)}
               </span>
             </div>
             <p className="text-xs text-gray-500 pt-1">
@@ -171,13 +183,15 @@ const TicketPayment = ({ ticket }: { ticket: Ticket }) => {
                   {ticket.ticket_code}
                 </span>
               </li>
-              <li>Enter Amount: KES {amountToPay.toLocaleString()}</li>
+              <li>
+                Enter Amount: KES {amountToPay * parseInt(ticket.quantity)}
+              </li>
             </ol>
           </CardContent>
         </Card>
 
         <Button asChild className="w-full rounded-full">
-          Download receipt
+          <Link href="/">Go back to events</Link>
         </Button>
       </div>
     </div>

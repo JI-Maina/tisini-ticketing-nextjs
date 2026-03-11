@@ -131,7 +131,7 @@ export const EventDetail: FC<EventProps> = ({ eventPackages }) => {
                       </div>
                       <div className="flex flex-col items-end gap-2 shrink-0">
                         <span className="text-xl font-bold text-main-blue">
-                          ${parseFloat(ticket.price).toLocaleString()}
+                          KES {parseFloat(ticket.price).toLocaleString()}
                         </span>
                         <span className="text-xs text-gray-500">
                           per ticket
@@ -158,7 +158,7 @@ export const EventDetail: FC<EventProps> = ({ eventPackages }) => {
               >
                 <Ticket className="w-5 h-5" />
                 {selectedTicket
-                  ? `Buy ${selectedTicket.category_name} — $${parseFloat(selectedTicket.price).toLocaleString()}`
+                  ? `Buy ${selectedTicket.category_name} — KES ${parseFloat(selectedTicket.price).toLocaleString()}`
                   : "Select a Ticket"}
               </Button>
             </Link>

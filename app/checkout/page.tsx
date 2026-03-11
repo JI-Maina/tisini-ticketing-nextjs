@@ -259,7 +259,7 @@ const CheckoutPage = () => {
                       {selectedTicket.category_name} Ticket
                     </span>
                     <span className="font-semibold">
-                      ${parseFloat(selectedTicket.price).toLocaleString()}
+                      KES {parseFloat(selectedTicket.price).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between items-center mt-2">
@@ -294,7 +294,7 @@ const CheckoutPage = () => {
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center text-lg font-bold">
                     <span>Total</span>
-                    <span>${totalPrice.toLocaleString()}</span>
+                    <span>KES {totalPrice.toLocaleString()}</span>
                   </div>
                 </div>
               </CardContent>
@@ -445,7 +445,7 @@ const CheckoutPage = () => {
                 <span>
                   {selectedTicket?.category_name} × {formData.quantity}
                 </span>
-                <span>${totalPrice.toLocaleString()}</span>
+                <span>KES {totalPrice.toLocaleString()}</span>
               </div>
               {purchaseResult?.ticket_code && (
                 <div className="flex items-center gap-2 pt-2 border-t">

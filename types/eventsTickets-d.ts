@@ -57,4 +57,5 @@ type Ticket = {
   quantity: string;
   amount_paid: string;
   payment_status: string;
+  TicketNo?: string;
 };
