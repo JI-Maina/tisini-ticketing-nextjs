@@ -59,7 +59,7 @@ const ConfirmPaymentPage: FC<Props> = async ({ params }) => {
 
 export default ConfirmPaymentPage;
 
-export const TicketPayment = ({ ticket }: { ticket: Ticket }) => {
+const TicketPayment = ({ ticket }: { ticket: Ticket }) => {
   const createdDate = ticket.date_created
     ? format(new Date(ticket.date_created), "EEEE, MMMM d, yyyy 'at' h:mm a")
     : "—";
